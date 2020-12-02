@@ -44,7 +44,7 @@ export default class App extends Component {
         {
           todoList: this.state.todoList.map(
             bob => bob.action === checkedToDoItem.action ? {...bob, done: !bob.done} : bob
-            
+
           )
         }
 
@@ -68,6 +68,17 @@ export default class App extends Component {
           </thead>
           <tbody>
             {this.todoTableRows(false)}
+          </tbody>
+        </table>
+
+        {/* Features 6 and 7 */}
+        <table className="table table-striped table-bordered">
+          <thead>
+            <th>Action</th>
+            <th>Mark As Incomplete</th>
+          </thead>
+          <tbody>
+            {this.todoTableRows(true)}
           </tbody>
         </table>
       </div>
