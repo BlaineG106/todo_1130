@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import { ToDoBanner } from './TODOBANNER';
 import { ToDoRow } from "./TODOROW";
 import { ToDoCreate } from './TODOCREATE';
-import {VisibilityControl} from './VISIBILITYCONTROL'
+import { VisibilityControl } from './VISIBILITYCONTROL'
 import 'bootstrap/dist/css/bootstrap.css';
 
 export default class App extends Component {
@@ -66,7 +66,27 @@ export default class App extends Component {
             // By default every new todo should not be done- in other words it's done property should have a value of false.
           ]
         }, () => localStorage.setItem("storedToDoObject", JSON.stringify(this.state))
-      ) //end of setState
+      ); //end of setState
+
+      //Feature 5.f
+      // Insert the new Todo into the DB
+      var myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+
+      var raw = JSON.stringify({ "todoOwnerID": 1, "action": newToDoAction, "done": 0});
+
+      var requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
+      };
+
+      fetch("http://localhost:54970/api/todos/CreateToDo", requestOptions)
+        .then(response => response.text())
+        .then(result => console.log(result))
+        .catch(error => console.log('error', error));
+
     } //end of If block
   }
 
@@ -75,7 +95,7 @@ export default class App extends Component {
   componentDidMount = () => {
     localStorage.clear();
 
-    fetch("http://localhost:54970/api/todos?todoOwnerID=1")
+    fetch("http://localhost:54970/api/todos/GetTodos?todoOwnerID=1")
       .then(response => response.json())
       .then((data) => {
         console.log(JSON.stringify({ data }));
@@ -87,7 +107,13 @@ export default class App extends Component {
           if (data.Data[i].done === 0) {
             isDone = false;
           }
-          var element = { action: data.Data[i].action, done: isDone };
+          var element = {
+            action: data.Data[i].action,
+            done: isDone,
+            todoID: data.Data[i].todoID
+          };
+
+
           apiList.push(element);
         }
 
@@ -126,6 +152,7 @@ export default class App extends Component {
         <thead>
           <th>Action</th>
           <th>Mark As Complete</th>
+          <th>Delete</th>
         </thead>
         <tbody>
           {this.todoTableRows(false)}
@@ -135,24 +162,25 @@ export default class App extends Component {
       {/* Feature 8 */}
       <div className="bg-secondary text-white text-center p-2">
         <VisibilityControl
-          description = "Completed Tasks"
-          isChecked = {this.state.showCompleted}
-          callback = {checked => this.setState({showCompleted: checked})} 
+          description="Completed Tasks"
+          isChecked={this.state.showCompleted}
+          callback={checked => this.setState({ showCompleted: checked })}
         />
       </div>
 
       {/* Features 6 and 7 */}
-      {this.state.showCompleted && 
-      <table className="table table-striped table-bordered">
-        <thead>
-          <th>Action</th>
-          <th>Mark As Incomplete</th>
-        </thead>
-        <tbody>
-          {this.todoTableRows(true)}
-        </tbody>
-      </table>
-      } 
+      {this.state.showCompleted &&
+        <table className="table table-striped table-bordered">
+          <thead>
+            <th>Action</th>
+            <th>Mark As Incomplete</th>
+            <th>Delete</th>
+          </thead>
+          <tbody>
+            {this.todoTableRows(true)}
+          </tbody>
+        </table>
+      }
     </div>
 
 } // END OF APP
